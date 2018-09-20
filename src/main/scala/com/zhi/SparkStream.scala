@@ -4,7 +4,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-class SparkStream {
+object SparkStream {
   def main(args: Array[String]): Unit = {
     if (args.length < 2) {
       System.err.println("Usage: NetworkWordCount <hostname> <port>")
