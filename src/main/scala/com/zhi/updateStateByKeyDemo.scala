@@ -1,5 +1,7 @@
 package com.zhi
 
+import java.sql.{Connection, DriverManager, PreparedStatement}
+
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -24,7 +26,39 @@ object updateStateByKeyDemo {
         val wordDstream = words.map(x => (x, 1))
         val stateDstream = wordDstream.updateStateByKey[Int](updateFunc)
         stateDstream.print()
-        stateDstream.saveAsTextFiles("file:///home/hadoop/res/dstreamoutput.txt")
+//        stateDstream.saveAsTextFiles("file:///home/hadoop/res/dstreamoutput.txt")//DStream保存到文本文件
+        stateDstream.foreachRDD(rdd => {
+            //定义一个内部函数
+            def func(records: Iterator[(String,Int)]) {
+                var conn: Connection = null
+                var stmt: PreparedStatement = null
+                try {
+                    val url = "jdbc:mysql://localhost:3306/spark"
+                    val user = "root"
+                    val password = "771929558"  //笔者设置的数据库密码是hadoop，请改成你自己的mysql数据库密码
+                    conn = DriverManager.getConnection(url, user, password)
+                    records.foreach(p => {
+                        val sql = "insert into wordcount(word,count) values (?,?)"
+                        stmt = conn.prepareStatement(sql)
+                        stmt.setString(1, p._1.trim)
+                        stmt.setInt(2,p._2.toInt)
+                        stmt.executeUpdate()
+                    })
+                } catch {
+                    case e: Exception => e.printStackTrace()
+                } finally {
+                    if (stmt != null) {
+                        stmt.close()
+                    }
+                    if (conn != null) {
+                        conn.close()
+                    }
+                }
+            }
+
+            val repartitionedRDD = rdd.repartition(3)//如果RDD分区数量太大，那么就会带来多次数据库连接开销
+            repartitionedRDD.foreachPartition(func)
+        })
         sc.start()
         sc.awaitTermination()
     }
