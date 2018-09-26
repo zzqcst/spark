@@ -24,6 +24,7 @@ object updateStateByKeyDemo {
         val wordDstream = words.map(x => (x, 1))
         val stateDstream = wordDstream.updateStateByKey[Int](updateFunc)
         stateDstream.print()
+        stateDstream.saveAsTextFiles("file:///home/hadoop/res/dstreamoutput.txt")
         sc.start()
         sc.awaitTermination()
     }
