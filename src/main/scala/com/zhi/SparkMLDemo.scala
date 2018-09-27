@@ -49,5 +49,6 @@ object SparkMLDemo {
           foreach { case Row(id: Long, text: String, prob: Vector, prediction: Double) =>
               println(s"($id, $text) --> prob=$prob, prediction=$prediction")
           }
+
     }
 }
