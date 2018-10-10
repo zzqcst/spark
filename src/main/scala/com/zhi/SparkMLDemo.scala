@@ -7,6 +7,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.linalg.Vector
 
+
 object SparkMLDemo {
     def main(args: Array[String]): Unit = {
         val conf = new SparkConf().setAppName("ml demo")
